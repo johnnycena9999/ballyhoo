@@ -86,3 +86,51 @@ const query: Query = {
 const filteredDocuments = filterDocuments(query, documents);
 
 console.log(filteredDocuments);
+
+
+
+// -----
+
+
+
+function matchesCriteria(item, criteria) {
+  if (typeof criteria === 'object' && criteria !== null) {
+    if (criteria.and) {
+      return Object.keys(criteria.and).every(key => matchesCriteria(item, { [key]: criteria.and[key] }));
+    }
+    if (criteria.or) {
+      return Object.keys(criteria.or).some(key => matchesCriteria(item, { [key]: criteria.or[key] }));
+    }
+  } else {
+    return Object.keys(criteria).every(key => item[key] === criteria[key]);
+  }
+  return false;
+}
+
+function filterItems(criteria, items) {
+  return items.filter(item => matchesCriteria(item, criteria));
+}
+
+// Example usage
+const criteria = {
+  "and": {
+    "name": "Alice",
+    "or": {
+      "color": "blue",
+      "and": {
+        "age": 30,
+        "eye": "green"
+      }
+    }
+  }
+};
+
+const items = [
+  { name: "Alice", color: "blue", age: 25, eye: "green" },
+  { name: "Alice", color: "red", age: 30, eye: "green" },
+  { name: "Bob", color: "blue", age: 30, eye: "green" },
+  { name: "Alice", color: "blue", age: 30, eye: "green" }
+];
+
+const filteredItems = filterItems(criteria, items);
+console.log(filteredItems);
