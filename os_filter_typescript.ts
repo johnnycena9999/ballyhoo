@@ -5,10 +5,8 @@ type Document = {
   category: string;
 };
 
-type OpenSearchQuery = {
-  query: {
-    bool: BoolQuery;
-  };
+type Query = {
+  bool: BoolQuery;
 };
 
 type BoolQuery = {
@@ -52,8 +50,8 @@ function matchesCondition(doc: Document, condition: Condition): boolean {
   return false;
 }
 
-function filterDocuments(query: OpenSearchQuery, docs: Document[]): Document[] {
-  const { must = [], should = [] } = query.query.bool;
+function filterDocuments(query: Query, docs: Document[]): Document[] {
+  const { must = [], should = [] } = query.bool;
 
   return docs.filter(doc => {
     const mustMatch = must.every(condition => matchesCondition(doc, condition));
@@ -63,28 +61,28 @@ function filterDocuments(query: OpenSearchQuery, docs: Document[]): Document[] {
   });
 }
 
-const filteredDocuments = filterDocuments({
-  query: {
-    bool: {
-      must: [
-        {
-          bool: {
-            should: [
-              { match: { "author.raw": "Alice" } },
-              {
-                bool: {
-                  must: [
-                    { match: { "title.raw": "OpenSearch" } }
-                  ]
-                }
+const query: Query = {
+  bool: {
+    must: [
+      {
+        bool: {
+          should: [
+            { match: { "author.raw": "Alice" } },
+            {
+              bool: {
+                must: [
+                  { match: { "title.raw": "OpenSearch" } }
+                ]
               }
-            ]
-          }
-        },
-        { match: { "category.raw": "Technology" } }
-      ]
-    }
+            }
+          ]
+        }
+      },
+      { match: { "category.raw": "Technology" } }
+    ]
   }
-}, documents);
+};
+
+const filteredDocuments = filterDocuments(query, documents);
 
 console.log(filteredDocuments);
