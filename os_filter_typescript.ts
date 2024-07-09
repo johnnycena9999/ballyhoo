@@ -111,11 +111,12 @@ function matchesCriteria(item, criteria) {
         return false;
       });
     }
+    // Handle leaf nodes where criteria is a simple value
+    return item === criteria;
   } else {
     // Leaf node, compare the values
     return item === criteria;
   }
-  return false;
 }
 
 function filterItems(criteria, items) {
