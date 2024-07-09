@@ -96,13 +96,24 @@ console.log(filteredDocuments);
 function matchesCriteria(item, criteria) {
   if (typeof criteria === 'object' && criteria !== null) {
     if (criteria.and) {
-      return Object.keys(criteria.and).every(key => matchesCriteria(item, { [key]: criteria.and[key] }));
+      return Object.keys(criteria.and).every(key => {
+        if (item[key] !== undefined) {
+          return matchesCriteria(item[key], criteria.and[key]);
+        }
+        return false;
+      });
     }
     if (criteria.or) {
-      return Object.keys(criteria.or).some(key => matchesCriteria(item, { [key]: criteria.or[key] }));
+      return Object.keys(criteria.or).some(key => {
+        if (item[key] !== undefined) {
+          return matchesCriteria(item[key], criteria.or[key]);
+        }
+        return false;
+      });
     }
   } else {
-    return Object.keys(criteria).every(key => item[key] === criteria[key]);
+    // Leaf node, compare the values
+    return item === criteria;
   }
   return false;
 }
@@ -110,27 +121,3 @@ function matchesCriteria(item, criteria) {
 function filterItems(criteria, items) {
   return items.filter(item => matchesCriteria(item, criteria));
 }
-
-// Example usage
-const criteria = {
-  "and": {
-    "name": "Alice",
-    "or": {
-      "color": "blue",
-      "and": {
-        "age": 30,
-        "eye": "green"
-      }
-    }
-  }
-};
-
-const items = [
-  { name: "Alice", color: "blue", age: 25, eye: "green" },
-  { name: "Alice", color: "red", age: 30, eye: "green" },
-  { name: "Bob", color: "blue", age: 30, eye: "green" },
-  { name: "Alice", color: "blue", age: 30, eye: "green" }
-];
-
-const filteredItems = filterItems(criteria, items);
-console.log(filteredItems);
