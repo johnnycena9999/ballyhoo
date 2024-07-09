@@ -28,10 +28,15 @@ const documents: Document[] = [
   // other documents
 ];
 
+function getProperty(doc: Document, key: string): string {
+  const cleanKey = key.replace(/\.raw$/, '');
+  return doc[cleanKey as keyof Document];
+}
+
 function matchesCondition(doc: Document, condition: Condition): boolean {
   if (condition.match) {
     return Object.entries(condition.match).every(([key, value]) => {
-      return doc[key as keyof Document].includes(value);
+      return getProperty(doc, key).includes(value);
     });
   }
   
@@ -65,18 +70,18 @@ const filteredDocuments = filterDocuments({
         {
           bool: {
             should: [
-              { match: { author: "Alice" } },
+              { match: { "author.raw": "Alice" } },
               {
                 bool: {
                   must: [
-                    { match: { title: "OpenSearch" } }
+                    { match: { "title.raw": "OpenSearch" } }
                   ]
                 }
               }
             ]
           }
         },
-        { match: { category: "Technology" } }
+        { match: { "category.raw": "Technology" } }
       ]
     }
   }
